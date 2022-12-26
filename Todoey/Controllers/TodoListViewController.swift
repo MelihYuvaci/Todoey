@@ -22,7 +22,6 @@ class TodoListViewController: UITableViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
     }
@@ -52,6 +51,19 @@ class TodoListViewController: UITableViewController{
     
     //MARK: - TebleView Delegate Methods
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        if let item = todoItems?[indexPath.row]{
+            do{
+                try realm.write({
+                    item.done = !item.done
+                })
+            }catch{
+                print("Error saving done status, \(error)")
+            }
+            
+        }
+        tableView.reloadData()
+        
         
         //        context.delete(itemArray[indexPath.row])
         //        itemArray.remove(at: indexPath.row)
