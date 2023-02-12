@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class TodoListViewController: SwipeTableViewController{
     
@@ -23,7 +24,7 @@ class TodoListViewController: SwipeTableViewController{
     override func viewDidLoad() {
         super.viewDidLoad()
         print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
+        tableView.separatorStyle = .none
     }
     
     //MARK: - Tableview Datasource Methods
@@ -38,7 +39,11 @@ class TodoListViewController: SwipeTableViewController{
         if let item = todoItems?[indexPath.row]{
             cell.textLabel?.text = item.title
             
-            // Ternary operator ==>
+            if let color = UIColor(hexString: selectedCategory!.color)?.darken(byPercentage:CGFloat(indexPath.row)  / CGFloat(todoItems!.count)){
+                cell.backgroundColor = color
+                cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
+            }
+             // Ternary operator ==>
             // value = condition ? valueIfTrue : valueIfFalse
             
             cell.accessoryType = item.done ? .checkmark : .none
@@ -128,9 +133,9 @@ class TodoListViewController: SwipeTableViewController{
     override func updateModel(at indexPath: IndexPath) {
         if let item = todoItems?[indexPath.row]{
             do {
-              try realm.write {
-                  realm.delete(item)
-              }
+                try realm.write {
+                    realm.delete(item)
+                }
             }catch{
                 print("Error deleting Item, \(error)")
             }
@@ -140,13 +145,13 @@ class TodoListViewController: SwipeTableViewController{
 
 //MARK: - Search bar methods
 extension TodoListViewController: UISearchBarDelegate{
-
+    
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated",ascending: true)
         tableView.reloadData()
-
+        
     }
-
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
             loadItems()
