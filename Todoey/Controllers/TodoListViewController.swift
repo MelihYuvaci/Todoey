@@ -14,6 +14,9 @@ class TodoListViewController: SwipeTableViewController{
     
     var todoItems : Results<Item>?
     let realm = try! Realm()
+    
+    @IBOutlet var searchBar: UITableView!
+    
     var selectedCategory: Category?{
         didSet{
             loadItems()
@@ -23,8 +26,22 @@ class TodoListViewController: SwipeTableViewController{
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         tableView.separatorStyle = .none
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        title = selectedCategory!.name
+        
+        if let colorHex = selectedCategory?.color{
+            guard let navbar = navigationController?.navigationBar else {fatalError("Navigation Controller does not exist")}
+            if let navBarColour =  UIColor(hexString: colorHex){
+                navbar.barTintColor = navBarColour
+                navbar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+                navbar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: ContrastColorOf(navBarColour, returnFlat: true)]
+                searchBar.backgroundColor = navBarColour
+            }
+        }
     }
     
     //MARK: - Tableview Datasource Methods
@@ -43,7 +60,7 @@ class TodoListViewController: SwipeTableViewController{
                 cell.backgroundColor = color
                 cell.textLabel?.textColor = ContrastColorOf(color, returnFlat: true)
             }
-             // Ternary operator ==>
+            // Ternary operator ==>
             // value = condition ? valueIfTrue : valueIfFalse
             
             cell.accessoryType = item.done ? .checkmark : .none
